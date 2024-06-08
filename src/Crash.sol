@@ -133,7 +133,6 @@ contract Treasury is Ownable, EIP712 {
 		);
 	}
 
-
 	function creditBalance(
 		address user,
 		uint32 coinId,
