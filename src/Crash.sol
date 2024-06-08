@@ -67,8 +67,14 @@ contract Treasury is Ownable, EIP712 {
 		Ownable(msg.sender)
 	{
 		agentAddress = initialAgentAddress;
-    }
+	}
 
+	/**
+	 * Assigns a new agent address. Implicitly invalidates
+	 * any outstanding signed requests.
+	 *
+	 * @param newAgentAddress New address.
+	 */
 	function setAgentAddress(
 		address newAgentAddress
 	)
@@ -133,6 +139,15 @@ contract Treasury is Ownable, EIP712 {
 		);
 	}
 
+	/**
+	 * Takes the specified amount of tokens of the given
+	 * coin from the available contract balance and assigns
+	 * it to the specified user.
+	 *
+	 * @param user   User to debit.
+	 * @param coinId ID of token.
+	 * @param amount Amount to debit.
+	 */
 	function creditBalance(
 		address user,
 		uint32 coinId,
@@ -153,6 +168,15 @@ contract Treasury is Ownable, EIP712 {
 		);
 	}
 
+	/**
+	 * Takes the specified amount of tokens of the given
+	 * coin from the user's balance and moves it to the
+	 * contract's available balance.
+	 *
+	 * @param user   User to debit.
+	 * @param coinId ID of token.
+	 * @param amount Amount to debit.
+	 */
 	function debitBalance(
 		address user,
 		uint32 coinId,
@@ -173,6 +197,13 @@ contract Treasury is Ownable, EIP712 {
 		);
 	}
 
+	/**
+	 * Given a list of housekeeping tasks, iterates
+	 * over the list and performs each task in order,
+	 * if it hasn't already been performed.
+	 *
+	 * @param tasks List of tasks.
+	 */
 	function executeTasks(
 		Task[] calldata tasks
 	)
@@ -202,6 +233,15 @@ contract Treasury is Ownable, EIP712 {
 		}
 	}
 
+	/**
+	 * Verifies that the given signature matches the
+	 * given request, and that the contract's agent
+	 * address was the signer of the request. Reverts
+	 * otherwise.
+	 *
+	 * @param req       Request that was signed.
+	 * @param signature Signature to verify.
+	 */
 	function validateWithdrawalSignature(
 		WithdrawalRequest calldata req,
 		bytes calldata signature
