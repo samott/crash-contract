@@ -16,7 +16,7 @@ error InvalidTaskTypeError();
 error InvalidSignatureError();
 error RequestNotFromUserError();
 
-contract Treasury is Ownable, EIP712 {
+contract Crash is Ownable, EIP712 {
 	address agentAddress;
 
 	enum TaskType {
