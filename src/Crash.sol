@@ -78,7 +78,69 @@ contract Treasury is Ownable, EIP712 {
 		agentAddress = newAgentAddress;
 	}
 
-	function creditBalance(address user, uint32 coinId, uint256 amount) public {
+	/**
+	 * Executes a withdrawal request prepared by the contract
+	 * agent. The agent may give the user housekeeping work to
+	 * do (adjusting balances of other users) prior to releasing
+	 * funds.
+	 *
+	 * @param req       Withdrawal request.
+	 * @param signature EIP712 signature of req.
+	 */
+	function withdraw(
+		WithdrawalRequest calldata req,
+		bytes calldata signature
+	)
+		public
+	{
+		if (req.user != msg.sender)
+			revert RequestNotFromUserError();
+
+		validateWithdrawalSignature(req, signature);
+		executeTasks(req.tasks);
+		debitBalance(req.user, req.coinId, req.amount);
+
+		IERC20 token = IERC20(supportedCoins[req.coinId]);
+		require(token.transfer(req.user, req.amount), "Transfer failed");
+	}
+
+	/**
+	 * Transfers tokens from the caller's wallet to the
+	 * contract and updates the caller's balance record.
+	 *
+	 * @param coinId Coin to deposit.
+	 * @param amount Number of tokens to transfer.
+	 */
+	function deposit(
+		uint32 coinId,
+		uint256 amount
+	)
+		public
+	{
+		uint256 balId = encodeBalanceId(msg.sender, coinId);
+
+		userBalances[balId] += amount;
+
+		IERC20 token = IERC20(supportedCoins[coinId]);
+		require(token.allowance(msg.sender, address(this)) >= amount, "Transfer not approved");
+		require(token.transferFrom(msg.sender, address(this), amount), "Transfer failed");
+
+		emit BalanceIncreased(
+			msg.sender,
+			coinId,
+			amount,
+			userBalances[balId]
+		);
+	}
+
+
+	function creditBalance(
+		address user,
+		uint32 coinId,
+		uint256 amount
+	)
+		internal
+	{
 		uint256 balId = encodeBalanceId(user, coinId);
 
 		contractBalances[coinId] -= amount;
@@ -92,7 +154,13 @@ contract Treasury is Ownable, EIP712 {
 		);
 	}
 
-	function debitBalance(address user, uint32 coinId, uint256 amount) public {
+	function debitBalance(
+		address user,
+		uint32 coinId,
+		uint256 amount
+	)
+		internal
+	{
 		uint256 balId = encodeBalanceId(user, coinId);
 
 		userBalances[balId] -= amount;
@@ -204,61 +272,6 @@ contract Treasury is Ownable, EIP712 {
 
 		bytes32 hash = keccak256(data);
 		return hash;
-	}
-
-	/**
-	 * Executes a withdrawal request prepared by the contract
-	 * agent. The agent may give the user housekeeping work to
-	 * do (adjusting balances of other users) prior to releasing
-	 * funds.
-	 *
-	 * @param req       Withdrawal request.
-	 * @param signature EIP712 signature of req.
-	 */
-	function withdraw(
-		WithdrawalRequest calldata req,
-		bytes calldata signature
-	)
-		public
-	{
-		if (req.user != msg.sender)
-			revert RequestNotFromUserError();
-
-		validateWithdrawalSignature(req, signature);
-		executeTasks(req.tasks);
-		debitBalance(req.user, req.coinId, req.amount);
-
-		IERC20 token = IERC20(supportedCoins[req.coinId]);
-		require(token.transfer(req.user, req.amount), "Transfer failed");
-	}
-
-	/**
-	 * Transfers tokens from the caller's wallet to the
-	 * contract and updates the caller's balance record.
-	 *
-	 * @param coinId Coin to deposit.
-	 * @param amount Number of tokens to transfer.
-	 */
-	function deposit(
-		uint32 coinId,
-		uint256 amount
-	)
-		public
-	{
-		uint256 balId = encodeBalanceId(msg.sender, coinId);
-
-		userBalances[balId] += amount;
-
-		IERC20 token = IERC20(supportedCoins[coinId]);
-		require(token.allowance(msg.sender, address(this)) >= amount, "Transfer not approved");
-		require(token.transferFrom(msg.sender, address(this), amount), "Transfer failed");
-
-		emit BalanceIncreased(
-			msg.sender,
-			coinId,
-			amount,
-			userBalances[balId]
-		);
 	}
 
 	/**
