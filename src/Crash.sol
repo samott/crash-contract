@@ -250,8 +250,8 @@ contract Treasury is Ownable, EIP712 {
 		userBalances[balId] += amount;
 
 		IERC20 token = IERC20(supportedCoins[coinId]);
-        require(token.allowance(msg.sender, address(this)) >= amount, "Transfer not approved");
-        require(token.transferFrom(msg.sender, address(this), amount), "Transfer failed");
+		require(token.allowance(msg.sender, address(this)) >= amount, "Transfer not approved");
+		require(token.transferFrom(msg.sender, address(this), amount), "Transfer failed");
 
 		emit BalanceIncreased(
 			msg.sender,
