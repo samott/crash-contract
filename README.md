@@ -13,3 +13,7 @@ $ forge build
 ```shell
 $ forge test
 ```
+
+```shell
+$ npx hardhat test
+```
