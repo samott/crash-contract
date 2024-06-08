@@ -1,11 +1,10 @@
-import "@nomicfoundation/hardhat-toolbox";
+import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-foundry";
 
 import type { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox-viem";
 
 const config: HardhatUserConfig = {
-	solidity: "0.8.24",
+	solidity: "0.8.25",
 	paths: {
 		sources: "./src",
 		tests: "./test-ts",
