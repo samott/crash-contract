@@ -85,6 +85,23 @@ contract Crash is Ownable, EIP712 {
 	}
 
 	/**
+	 * Adds a supported coin (ERC20 token)
+	 *
+	 * @param coinId Unique ID to assign to this taken.
+	 * @param token  Address of token to add.
+	 */
+	function addCoin(
+		uint32 coinId,
+		IERC20 token
+	)
+		public
+		onlyOwner
+	{
+		require(address(supportedCoins[coinId]) == address(0), "coinId already assigned");
+		supportedCoins[coinId] = token;
+	}
+
+	/**
 	 * Executes a withdrawal request prepared by the contract
 	 * agent. The agent may give the user housekeeping work to
 	 * do (adjusting balances of other users) prior to releasing
