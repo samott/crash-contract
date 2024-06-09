@@ -17,7 +17,7 @@ error InvalidSignatureError();
 error RequestNotFromUserError();
 
 contract Crash is Ownable, EIP712 {
-	address agentAddress;
+	address public agentAddress;
 
 	enum TaskType {
 		CREDIT,
