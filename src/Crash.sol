@@ -40,7 +40,7 @@ contract Crash is Ownable, EIP712 {
 		Task[] tasks;
 	}
 
-	mapping(uint32 => IERC20) supportedCoins;
+	mapping(uint32 => IERC20) public supportedCoins;
 
 	mapping(uint32 => uint256) contractBalances;
 	mapping(uint256 => uint256) userBalances;
