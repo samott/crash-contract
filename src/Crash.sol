@@ -42,9 +42,9 @@ contract Crash is Ownable, EIP712 {
 
 	mapping(uint32 => IERC20) public supportedCoins;
 
-	mapping(uint32 => uint256) contractBalances;
-	mapping(uint256 => uint256) userBalances;
-	mapping(address => uint256) nonces;
+	mapping(uint32 => uint256) public contractBalances;
+	mapping(uint256 => uint256) public userBalances;
+	mapping(address => uint256) public nonces;
 
 	event BalanceIncreased(
 		address user,
