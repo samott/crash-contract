@@ -15,6 +15,7 @@ import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 error InvalidTaskTypeError();
 error InvalidSignatureError();
 error RequestNotFromUserError();
+error InvalidCoinId();
 
 contract Crash is Ownable, EIP712 {
 	address public agentAddress;
@@ -59,6 +60,18 @@ contract Crash is Ownable, EIP712 {
 		uint256 amount,
 		uint256 newBalance
 	);
+
+	/**
+	 * Requires a valid coin. Throws an exception if the coin is not valid.
+	 *
+	 * @param coinId The coin to check.
+	 */
+	modifier onlyValidCoin(uint32 coinId) {
+		if (coinId == 0 || address(supportedCoins[coinId]) == address(0)) {
+			revert InvalidCoinId();
+		}
+		_;
+	}
 
 	constructor(
 		address initialAgentAddress
@@ -139,6 +152,7 @@ contract Crash is Ownable, EIP712 {
 		uint256 amount
 	)
 		public
+		onlyValidCoin(coinId)
 	{
 		uint256 balId = encodeBalanceId(msg.sender, coinId);
 
