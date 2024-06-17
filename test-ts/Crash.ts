@@ -3,36 +3,44 @@ import hre from "hardhat";
 
 import {
 	PublicClient,
-	WalletClient,
-	Account,
 	parseUnits,
 	formatUnits,
 	zeroAddress,
 } from "viem";
 
+type Contract = Awaited<ReturnType<typeof hre.viem.getContractAt>>;
+type Client = Awaited<ReturnType<typeof hre.viem.getWalletClients>>[number];
+
+type CoinDef = {
+	contract?: Contract,
+	coinId: number
+};
+
 describe("Crash", () => {
 	let crashContract: any;
-	let owner: WalletClient;
-	let agent: WalletClient;
-	let user1: WalletClient;
+	let owner: Client;
+	let agent: Client;
+	let user1: Client;
 	let publicClient: PublicClient;
 
-	const coins = {
+	const coins: Record<string, CoinDef> = {
 		weth: {
-			contract: null,
 			coinId: 1
 		}
 	}
 
 	const contractAs = async (
-		wallet: Account,
+		client: Client,
 		contractName: string = 'Crash',
 		contract: Contract = crashContract
 	) => {
+		if (!client.account)
+			throw new Error('Account not defined');
+
 		return await hre.viem.getContractAt(
 			contractName,
 			contract.address,
-			{ client: { wallet } }
+			{ client: { wallet: client } }
 		);
 	}
 
@@ -56,7 +64,7 @@ describe("Crash", () => {
 		it('Should configure WETH as a supported coin', async () => {
 			await crashContract.write.addCoin([coins.weth.coinId, coins.weth?.contract?.address]);
 			const coinAddress = await crashContract.read.supportedCoins([ coins.weth.coinId ]);
-			expect(coinAddress.toLowerCase()).to.equal(coins.weth.contract.address.toLowerCase());
+			expect(coinAddress.toLowerCase()).to.equal(coins.weth.contract!.address.toLowerCase());
 		});
 	});
 
@@ -64,9 +72,9 @@ describe("Crash", () => {
 		it('Should give user some WETH', async () => {
 			const amount = '10';
 
-			await coins.weth.contract.write.transfer([ user1.account.address, parseUnits(amount, 18) ]);
+			await coins.weth.contract!.write.transfer([ user1.account!.address, parseUnits(amount, 18) ]);
 
-			const newBalance = await coins.weth.contract.read.balanceOf([ user1.account.address ]);
+			const newBalance = await coins.weth.contract!.read.balanceOf([ user1.account!.address ]);
 
 			expect(formatUnits(newBalance, 18)).to.equal(amount);
 		});
