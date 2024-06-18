@@ -89,7 +89,54 @@ describe("Crash", () => {
 
 			await wethAsUser1.write.approve([ crashContract.address, parseUnits(amount, 18) ]);
 
-			await contractAsUser1.write.deposit([coins.weth.coinId, parseUnits(amount, 18) ]);
+			await contractAsUser1.write.deposit([ coins.weth.coinId, parseUnits(amount, 18) ]);
+		});
+	});
+
+	describe('Withdrawal', () => {
+		it('Should withdraw user funds with permission', async () => {
+			const domain = {
+				name: 'Crash',
+				version: '1.0',
+				chainId: crashContract.chainId,
+				verifyingContract: crashContract.address,
+			};
+
+			const types = {
+				WithdrawalRequest: [
+					{ name: 'user', type: 'address' },
+					{ name: 'coinId', type: 'uint32' },
+					{ name: 'amount', type: 'uint256' },
+					{ name: 'nonce', type: 'uint256' },
+					{ name: 'tasks', type: 'Task[]' },
+				],
+				Task: [
+					{ name: 'taskType', type: 'uint8' },
+					{ name: 'user', type: 'address' },
+					{ name: 'coinId', type: 'uint32' },
+					{ name: 'amount', type: 'uint256' },
+					{ name: 'nonce', type: 'uint256' },
+				]
+			};
+
+			const request = {
+				user: user1.account.address,
+				coinId: coins.weth.coinId,
+				amount: '1',
+				nonce: 0,
+				tasks: []
+			};
+
+			const signature = await agent.signTypedData({
+				domain,
+				types,
+				primaryType: 'WithdrawalRequest',
+				message: request
+			});
+
+			const contractAsUser1 = await contractAs(user1);
+
+			await contractAsUser1.write.withdraw([ request, signature ]);
 		});
 	});
 });
