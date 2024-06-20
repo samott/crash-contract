@@ -44,7 +44,7 @@ contract Crash is Ownable, EIP712 {
 	mapping(uint32 => IERC20) public supportedCoins;
 
 	mapping(uint32 => uint256) public contractBalances;
-	mapping(uint256 => uint256) public userBalances;
+	mapping(uint256 => uint256) private userBalances;
 	mapping(address => uint256) public nonces;
 
 	event BalanceIncreased(
@@ -112,6 +112,19 @@ contract Crash is Ownable, EIP712 {
 	{
 		require(address(supportedCoins[coinId]) == address(0), "coinId already assigned");
 		supportedCoins[coinId] = token;
+	}
+
+	function getUserBalance(
+		address user,
+		uint32 coinId
+	)
+		public
+		onlyValidCoin(coinId)
+		view
+		returns (uint256)
+	{
+		uint256 balId = encodeBalanceId(user, coinId);
+		return userBalances[balId];
 	}
 
 	/**
