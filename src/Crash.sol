@@ -281,7 +281,7 @@ contract Crash is Ownable, EIP712 {
 		view
 	{
 		bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
-			keccak256("WithdrawalRequest(address user,uint32 coinId,uint256 amount,uint256 nonce,Task[] tasks)"),
+			keccak256("WithdrawalRequest(address user,uint32 coinId,uint256 amount,uint256 nonce,Task[] tasks)Task(uint8 taskType,address user,uint32 coinId,uint256 amount,uint256 nonce)"),
 			req.user,
 			req.coinId,
 			req.amount,
