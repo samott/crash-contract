@@ -98,7 +98,7 @@ describe("Crash", () => {
 			const domain = {
 				name: 'Crash',
 				version: '1.0',
-				chainId: crashContract.chainId,
+				chainId: 31337,
 				verifyingContract: crashContract.address,
 			};
 
