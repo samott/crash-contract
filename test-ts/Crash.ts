@@ -134,9 +134,29 @@ describe("Crash", () => {
 				message: request
 			});
 
-			const contractAsUser1 = await contractAs(user1);
+			const contractBalanceBefore = await crashContract.read.getUserBalance([
+				user1.account.address,
+				coins.weth.coinId
+			]);
 
+			const walletBalanceBefore = await coins.weth.contract!.read.balanceOf([
+				user1.account.address,
+			]);
+
+			const contractAsUser1 = await contractAs(user1);
 			await contractAsUser1.write.withdraw([ request, signature ]);
+
+			const contractBalanceAfter = await crashContract.read.getUserBalance([
+				user1.account.address,
+				coins.weth.coinId
+			]);
+
+			const walletBalanceAfter = await coins.weth.contract!.read.balanceOf([
+				user1.account.address,
+			]);
+
+			expect(contractBalanceBefore - contractBalanceAfter).to.equal(1n);
+			expect(walletBalanceAfter - walletBalanceBefore).to.equal(1n);
 		});
 	});
 });
