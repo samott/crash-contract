@@ -273,7 +273,7 @@ contract Crash is Ownable, EIP712 {
 				revert InvalidTaskTypeError();
 			}
 
-			nonces[tasks[i].user]++;
+			nonces[tasks[i].user] = tasks[i].nonce + 1;
 		}
 	}
 
