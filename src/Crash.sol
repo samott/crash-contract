@@ -15,6 +15,7 @@ import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 error InvalidTaskTypeError();
 error InvalidSignatureError();
 error RequestNotFromUserError();
+error InvalidNonceError();
 error InvalidCoinId();
 
 contract Crash is Ownable, EIP712 {
@@ -45,6 +46,7 @@ contract Crash is Ownable, EIP712 {
 
 	mapping(uint32 => uint256) public contractBalances;
 	mapping(uint256 => uint256) private userBalances;
+	mapping(address => uint256) public taskNonces;
 	mapping(address => uint256) public nonces;
 
 	event BalanceIncreased(
@@ -145,9 +147,13 @@ contract Crash is Ownable, EIP712 {
 		if (req.user != msg.sender)
 			revert RequestNotFromUserError();
 
+		if (nonces[req.user] > req.nonce)
+			revert InvalidNonceError();
+
 		validateWithdrawalSignature(req, signature);
 		executeTasks(req.tasks);
 		debitBalance(req.user, req.coinId, req.amount);
+		nonces[req.user] = req.nonce + 1;
 
 		IERC20 token = IERC20(supportedCoins[req.coinId]);
 		require(token.transfer(req.user, req.amount), "Transfer failed");
@@ -254,7 +260,7 @@ contract Crash is Ownable, EIP712 {
 		internal
 	{
 		for (uint256 i = 0; i < tasks.length; i++) {
-			if (tasks[i].nonce >= nonces[tasks[i].user])
+			if (tasks[i].nonce > taskNonces[tasks[i].user])
 				continue;
 
 			if (tasks[i].taskType == TaskType.DEBIT) {
@@ -273,7 +279,7 @@ contract Crash is Ownable, EIP712 {
 				revert InvalidTaskTypeError();
 			}
 
-			nonces[tasks[i].user] = tasks[i].nonce + 1;
+			taskNonces[tasks[i].user] = tasks[i].nonce + 1;
 		}
 	}
 
